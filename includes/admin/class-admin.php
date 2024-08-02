@@ -6,7 +6,7 @@ class MPP_Admin {
     }
 
     public function add_admin_menu() {
-        add_menu_page('Poll System', 'Poll System', 'manage_options', 'mpp_polls', array($this, 'polls_list_page'));
+        add_menu_page('Poll System', 'Poll System', 'manage_options', 'mpp_polls', array($this, 'polls_list_page'),'dashicons-admin-comments');
         add_submenu_page('mpp_polls', 'Poll question List', 'Poll question List', 'manage_options', 'mpp_polls', array($this, 'polls_list_page'));
         add_submenu_page('mpp_polls', 'Create Poll', 'Create Poll', 'manage_options', 'mpp_create_poll', array($this, 'create_poll_page'));
         add_submenu_page(
@@ -104,7 +104,6 @@ class MPP_Admin {
         exit;
     }
     
-    
     private function delete_poll($poll_id) {
         ob_start(); // Start output buffering
         $polls = get_option('mpp_polls', array());
@@ -189,7 +188,6 @@ class MPP_Admin {
         echo '</div>';
     }
     
-    
     private function edit_poll($poll_id) {
         ob_start(); // Start output buffering
         $polls = get_option('mpp_polls', array());
@@ -246,7 +244,6 @@ class MPP_Admin {
         ob_end_flush(); // Flush the output buffer
     }
     
-
     public function create_poll_page() {
         // Get all polls and ensure it's an array
         $polls = get_option('mpp_polls', array());
@@ -338,23 +335,7 @@ class MPP_Admin {
         </script>
         <?php
     }
-    
-    
-    // public function register_submenu_page() {
-    //     add_submenu_page(
-    //         'edit.php?post_type=poll', // Main menu slug
-    //         'View All Polls',          // Page title
-    //         'View All Polls',          // Menu title
-    //         'manage_options',          // Capability
-    //         'view_all_polls',          // Menu slug
-    //         array($this, 'view_poll')  // Callback function
-    //     );
-    // }
-
-
-    
-    
-    
+     
     
 }
 
