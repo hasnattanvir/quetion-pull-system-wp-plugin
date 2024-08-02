@@ -54,7 +54,7 @@ class MPP_Frontend {
                         </div>
                         <div class="progress-bar">
                             <div class="progress" data-percent="<?php echo esc_attr($poll['votes_percent'][$index]); ?>%" style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%; background-color: echo esc_attr($poll['bgcolor']);" >
-                                <span style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%;"><?php echo round($poll['votes_percent'][$index]); ?>%</span>
+                                <span style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%;"><?php echo round($poll['votes_percent'][$index]);?>%</span>
                             </div>
                         </div>
                         <div class="total_vote"><span><?php echo esc_attr($poll['votes'][$index]); ?></span></div>

@@ -77,6 +77,11 @@
   border-radius: 25px;
   overflow: hidden;
 }
+.progress span{
+  padding-top: 10px!important;
+  font-size: 13px!important;
+
+}
 .contant_box .option_answer .progress-bar .test {
   background-color: rgb(255, 121, 121);
   height: 40px;
