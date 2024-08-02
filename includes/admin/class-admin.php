@@ -20,13 +20,15 @@ class MPP_Admin {
         if (isset($_GET['action']) && isset($_GET['poll_id'])) {
             $poll_id = intval($_GET['poll_id']);
             $action = sanitize_text_field($_GET['action']);
-    
+        
             if ($action === 'delete') {
                 $this->delete_poll($poll_id);
             } elseif ($action === 'view') {
                 $this->view_poll($poll_id);
             } elseif ($action === 'edit') {
                 $this->edit_poll($poll_id);
+            } elseif ($action === 'toggle_status') {
+                $this->toggle_poll_status($poll_id);
             }
         } else {
             $polls = get_option('mpp_polls', array());
@@ -46,6 +48,7 @@ class MPP_Admin {
                             <th>Title</th>
                             <th>Options</th>
                             <th>Short Code</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -59,16 +62,18 @@ class MPP_Admin {
                                     return chr(65 + $key) . '. ' . $option;
                                 }, $poll['options'], array_keys($poll['options'])))); ?></td>
                                 <td><code>[mpp_poll id="<?php echo esc_attr($index); ?>"]</code></td> <!-- Display shortcode -->
+                                <td><?php echo $poll['status'] ? 'Active' : 'Inactive'; ?></td>
                                 <td>
                                     <a href="?page=mpp_polls&action=view&poll_id=<?php echo esc_attr($index); ?>">View</a> | 
                                     <a href="?page=mpp_polls&action=edit&poll_id=<?php echo esc_attr($index); ?>">Edit</a> | 
-                                    <a href="?page=mpp_polls&action=delete&poll_id=<?php echo esc_attr($index); ?>" onclick="return confirm('Are you sure you want to delete this poll?');">Delete</a>
+                                    <a href="?page=mpp_polls&action=delete&poll_id=<?php echo esc_attr($index); ?>" onclick="return confirm('Are you sure you want to delete this poll?');">Delete</a> | 
+                                    <a href="?page=mpp_polls&action=toggle_status&poll_id=<?php echo esc_attr($index); ?>"><?php echo $poll['status'] ? 'Deactivate' : 'Activate'; ?></a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4">No polls found.</td>
+                                <td colspan="6">No polls found.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -78,6 +83,19 @@ class MPP_Admin {
         }
         ob_end_flush(); // Flush the output buffer
     }
+
+    private function toggle_poll_status($poll_id) {
+        $polls = get_option('mpp_polls', array());
+    
+        if (isset($polls[$poll_id])) {
+            $polls[$poll_id]['status'] = !$polls[$poll_id]['status'];
+            update_option('mpp_polls', $polls);
+        }
+    
+        wp_redirect(admin_url('admin.php?page=mpp_polls'));
+        exit;
+    }
+    
     
     private function delete_poll($poll_id) {
         ob_start(); // Start output buffering
@@ -128,11 +146,13 @@ class MPP_Admin {
             if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_poll'])) {
                 $question = sanitize_text_field($_POST['question']);
                 $options = array_map('sanitize_text_field', $_POST['options']);
+                $status = isset($_POST['status']) ? 1 : 0;
     
                 $polls[$poll_id] = array(
                     'question' => $question,
                     'options' => $options,
-                    'votes' => array_fill(0, count($options), 0)
+                    'votes' => array_fill(0, count($options), 0),
+                    'status' => $status
                 );
     
                 update_option('mpp_polls', $polls);
@@ -158,28 +178,20 @@ class MPP_Admin {
                                 <?php endforeach; ?>
                             </td>
                         </tr>
+                        <tr valign="top">
+                            <th scope="row">Status</th>
+                            <td><input type="checkbox" name="status" value="1" <?php checked($poll['status'], 1); ?> /> Active</td>
+                        </tr>
                     </table>
-                    <!-- <button type="button" id="add-option" class="button">Add Option</button> -->
                     <br><br>
                     <?php submit_button('Save Poll', 'primary', 'edit_poll'); ?>
                 </form>
             </div>
-    
-            <script>
-                document.getElementById('add-option').addEventListener('click', function() {
-                    const container = document.getElementById('poll-options');
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.name = 'options[]';
-                    input.placeholder = 'Poll Option ' + (container.getElementsByTagName('input').length + 1);
-                    container.appendChild(input);
-                    container.appendChild(document.createElement('br'));
-                });
-            </script>
             <?php
         }
         ob_end_flush(); // Flush the output buffer
     }
+    
 
     public function create_poll_page() {
         // Get all polls and ensure it's an array
@@ -194,6 +206,7 @@ class MPP_Admin {
             $question = sanitize_text_field($_POST['question']);
             $options = array_map('sanitize_text_field', $_POST['options']);
             $bgcolor = sanitize_hex_color($_POST['bgcolor']); // Ensure a valid color format
+            $status = isset($_POST['status']) ? 1 : 0; // Get the status value
     
             // Generate a unique poll ID
             $poll_id = count($polls); // Generate a new ID based on array count
@@ -205,7 +218,8 @@ class MPP_Admin {
                 'question' => $question,
                 'options' => $options,
                 'votes' => array_fill(0, count($options), 0),
-                'bgcolor' => $bgcolor
+                'bgcolor' => $bgcolor,
+                'status' => $status // Save the status
             );
     
             update_option('mpp_polls', $polls);
@@ -221,8 +235,12 @@ class MPP_Admin {
             <form method="post" action="">
                 <table class="form-table">
                     <tr valign="top">
-                        <th scope="row">Poll Title</th>
-                        <td><input type="text" name="question" value="" /></td>
+                        <th scope="row">Poll Question</th>
+                        <td><input type="text" name="question" placeholder="Enter poll question" required /></td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Status</th>
+                        <td><input type="checkbox" name="status" value="1" /> Active</td>
                     </tr>
                     <tr valign="top">
                         <th scope="row">Options</th>
@@ -266,6 +284,7 @@ class MPP_Admin {
         </script>
         <?php
     }
+    
     
     
     

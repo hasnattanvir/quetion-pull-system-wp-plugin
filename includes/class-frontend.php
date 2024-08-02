@@ -19,8 +19,8 @@ class MPP_Frontend {
         $poll_id = intval($atts['id']);
         $polls = get_option('mpp_polls', array());
     
-        if (!isset($polls[$poll_id])) {
-            return 'Poll not found.';
+        if (!isset($polls[$poll_id]) || !$polls[$poll_id]['status']) { // Check if the poll is active
+            return 'Poll not found or inactive.';
         }
     
         $poll = $polls[$poll_id];
