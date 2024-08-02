@@ -151,6 +151,8 @@ class MPP_Frontend {
             'votes_percent' => $polls[$poll_id]['votes_percent']
         ));
     }
+
+    
     
     
     

@@ -9,6 +9,14 @@ class MPP_Admin {
         add_menu_page('Poll System', 'Poll System', 'manage_options', 'mpp_polls', array($this, 'polls_list_page'));
         add_submenu_page('mpp_polls', 'Poll question List', 'Poll question List', 'manage_options', 'mpp_polls', array($this, 'polls_list_page'));
         add_submenu_page('mpp_polls', 'Create Poll', 'Create Poll', 'manage_options', 'mpp_create_poll', array($this, 'create_poll_page'));
+        add_submenu_page(
+            'mpp_polls', // Main menu slug
+            'View All Polls',          // Page title
+            'View All Polls',          // Menu title
+            'manage_options',          // Capability
+            'view_all_polls',          // Menu slug
+            array($this, 'view_all_poll')  // Callback function
+        );
     }
 
     public function register_settings() {
@@ -110,29 +118,75 @@ class MPP_Admin {
         exit;
         ob_end_flush(); // Flush the output buffer
     }
-    
+
     private function view_poll($poll_id) {
         $polls = get_option('mpp_polls', array());
     
         if (isset($polls[$poll_id])) {
             $poll = $polls[$poll_id];
+            $total_votes = array_sum($poll['votes']); // Total votes in the poll
             ?>
             <div class="wrap">
                 <h1>View Poll</h1>
                 <p><strong>Question:</strong> <?php echo esc_html($poll['question']); ?></p>
-                <p><strong>Options:</strong></p>
+                <p><strong>Options and Results:</strong></p>
                 <ul>
-                    <?php foreach ($poll['options'] as $option) : ?>
-                    <li><?php echo esc_html($option); ?></li>
+                    <?php foreach ($poll['options'] as $index => $option) : 
+                        $votes = $poll['votes'][$index];
+                        $percent = $total_votes > 0 ? ($votes / $total_votes) * 100 : 0;
+                        ?>
+                        <li>
+                            <?php echo esc_html($option); ?> - <?php echo esc_html($votes); ?> votes (<?php echo round($percent, 2); ?>%)
+                        </li>
                     <?php endforeach; ?>
                 </ul>
+                <p><strong>Total Votes:</strong> <?php echo esc_html($total_votes); ?></p>
+                <p><strong>Total Percentage:</strong> 100%</p> <!-- Since the total percentage is always 100% -->
                 <p><strong>Shortcode:</strong> <code>[mpp_poll id="<?php echo esc_attr($poll_id); ?>"]</code></p>
-                <a href="<?php echo admin_url('admin.php?page=mpp_polls'); ?>">Back to Poll List</a>
+                <a href="<?php echo admin_url('admin.php?page=view_all_polls'); ?>">Back to Poll List</a>
             </div>
             <?php
         } else {
             echo '<div class="wrap"><h1>Poll not found</h1></div>';
         }
+    }
+    
+    public function view_all_poll() {
+        $polls = get_option('mpp_polls', array());
+    
+        if (!is_array($polls) || empty($polls)) {
+            echo '<p>No polls found.</p>';
+            return;
+        }
+    
+        echo '<div class="wrap">';
+        echo '<h1>View Polls</h1>';
+        
+        foreach ($polls as $poll_id => $poll) {
+            $total_votes = array_sum($poll['votes']);
+    
+            echo '<h2>' . esc_html($poll['question']) . '</h2>';
+            echo '<table class="wp-list-table widefat fixed striped table-view-list polls">';
+            echo '<thead><tr><th>Option</th><th>Votes</th><th>Percentage</th></tr></thead>';
+            echo '<tbody>';
+    
+            foreach ($poll['options'] as $index => $option) {
+                $votes = $poll['votes'][$index];
+                $percentage = $total_votes > 0 ? round(($votes / $total_votes) * 100, 2) : 0;
+    
+                echo '<tr>';
+                echo '<td>' . esc_html($option) . '</td>';
+                echo '<td>' . esc_html($votes) . '</td>';
+                echo '<td>' . esc_html($percentage) . '%</td>';
+                echo '</tr>';
+            }
+    
+            echo '</tbody>';
+            echo '</table>';
+            echo '<br>';
+        }
+    
+        echo '</div>';
     }
     
     
@@ -285,6 +339,19 @@ class MPP_Admin {
         <?php
     }
     
+    
+    // public function register_submenu_page() {
+    //     add_submenu_page(
+    //         'edit.php?post_type=poll', // Main menu slug
+    //         'View All Polls',          // Page title
+    //         'View All Polls',          // Menu title
+    //         'manage_options',          // Capability
+    //         'view_all_polls',          // Menu slug
+    //         array($this, 'view_poll')  // Callback function
+    //     );
+    // }
+
+
     
     
     

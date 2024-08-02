@@ -1,0 +1,13 @@
+table.polls {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.polls th, table.polls td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+table.polls th {
+    background-color: #f2f2f2;
+}
