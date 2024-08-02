@@ -31,7 +31,7 @@ jQuery(document).ready(function($) {
                         var $totalVote = $optionAnswer.find('.total_vote span');
 
                         var index = $optionAnswer.data('option-index');
-                        var percent = response.data.total_votes > 0 ? (response.data.votes_percent[index] / response.data.total_votes) * 100 : 0;
+                        var percent = response.data.votes_percent[index]; // Use percent from server
                         percent = Math.round(percent * 100) / 100; // Round to 2 decimal places
 
                         $progressBar.attr('data-percent', percent);

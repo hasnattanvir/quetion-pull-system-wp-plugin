@@ -37,7 +37,7 @@ class MPP_Frontend {
 
         ob_start();
         ?>
-        <div class="contant_box" style="background-color: <?php echo esc_attr($poll['bgcolor']); ?>;">
+        <div class="contant_box">
             <div class="title_Box quotation">
                 <p class="h3"><?php echo esc_html($poll['question']); ?></p>
             </div>
@@ -53,7 +53,7 @@ class MPP_Frontend {
                             </div>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress" data-percent="<?php echo esc_attr($poll['votes_percent'][$index]); ?>%" style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%; background-color: #FF7979;">
+                            <div class="progress" data-percent="<?php echo esc_attr($poll['votes_percent'][$index]); ?>%" style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%; background-color: echo esc_attr($poll['bgcolor']);" >
                                 <span style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%;"><?php echo round($poll['votes_percent'][$index]); ?>%</span>
                             </div>
                         </div>
@@ -97,39 +97,39 @@ class MPP_Frontend {
             if (!is_array($user_votes)) {
                 $user_votes = array();
             }
-            if (in_array($poll_id, $user_votes)) {
+            if (isset($user_votes[$poll_id])) {
                 // User has voted, allow changing the vote
-                $previously_selected_option = isset($polls[$poll_id]['selected_option']) ? $polls[$poll_id]['selected_option'] : null;
-                if ($previously_selected_option !== null && $previously_selected_option != $option_index) {
+                $previously_selected_option = $user_votes[$poll_id];
+                if ($previously_selected_option !== $option_index) {
                     // Decrease the count for the previously selected option
                     $polls[$poll_id]['votes'][$previously_selected_option]--;
+                    // Increase the count for the new selected option
+                    $polls[$poll_id]['votes'][$option_index]++;
+                    $user_votes[$poll_id] = $option_index;
+                    update_user_meta($user_id, 'mpp_votes', $user_votes);
                 }
-                // Update the user's vote
-                $polls[$poll_id]['votes'][$option_index]++;
-                $polls[$poll_id]['selected_option'] = $option_index;
             } else {
                 // User has not voted yet
-                $user_votes[] = $poll_id;
+                $user_votes[$poll_id] = $option_index;
                 update_user_meta($user_id, 'mpp_votes', $user_votes);
                 $polls[$poll_id]['votes'][$option_index]++;
-                $polls[$poll_id]['selected_option'] = $option_index;
             }
         } else {
             // Handle non-logged-in users using IP address and cookies
             if (isset($_COOKIE['mpp_voted_' . $poll_id])) {
                 // Check if user has already voted
-                $previously_selected_option = isset($polls[$poll_id]['selected_option']) ? $polls[$poll_id]['selected_option'] : null;
-                if ($previously_selected_option !== null && $previously_selected_option != $option_index) {
+                $previously_selected_option = $_COOKIE['mpp_voted_' . $poll_id];
+                if ($previously_selected_option !== $option_index) {
                     // Decrease the count for the previously selected option
                     $polls[$poll_id]['votes'][$previously_selected_option]--;
+                    // Increase the count for the new selected option
+                    $polls[$poll_id]['votes'][$option_index]++;
+                    setcookie('mpp_voted_' . $poll_id, $option_index, time() + 3600 * 24 * 30, COOKIEPATH, COOKIE_DOMAIN); // 30 days
                 }
-                // Update the cookie to allow a new vote
-                setcookie('mpp_voted_' . $poll_id, '1', time() + 3600 * 24 * 30, COOKIEPATH, COOKIE_DOMAIN); // 30 days
             } else {
                 // First-time vote
-                setcookie('mpp_voted_' . $poll_id, '1', time() + 3600 * 24 * 30, COOKIEPATH, COOKIE_DOMAIN); // 30 days
+                setcookie('mpp_voted_' . $poll_id, $option_index, time() + 3600 * 24 * 30, COOKIEPATH, COOKIE_DOMAIN); // 30 days
                 $polls[$poll_id]['votes'][$option_index]++;
-                $polls[$poll_id]['selected_option'] = $option_index;
             }
         }
     
@@ -154,6 +154,10 @@ class MPP_Frontend {
     
     
     
+    
+    
 }
 
 new MPP_Frontend();
+
+?>
