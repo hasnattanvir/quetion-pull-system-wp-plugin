@@ -1,0 +1,100 @@
+* {
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/Inter-Regular.woff2") format("woff2"), url("../fonts/Inter-Regular.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+.contant_box {
+  margin: auto;
+  width: 664px;
+  max-width: 100%;
+  border-radius: 20px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+  border: 1px solid #000000;
+  font-family: "Inter";
+  overflow: hidden;
+}
+.contant_box .title_Box {
+  width: 100%;
+  background-color: #DFF9FB;
+  padding: 15px 20px;
+}
+.contant_box .title_Box .h3 {
+  font-size: 16px;
+}
+@media only screen and (max-width: 568px) {
+  .contant_box .title_Box {
+    padding: 28px 30px 40px 36px;
+  }
+}
+.contant_box .Option_text_box {
+  padding: 20px;
+}
+@media only screen and (max-width: 568px) {
+  .contant_box .Option_text_box {
+    padding-left: 36px;
+    padding-top: 20px;
+    padding-bottom: 90px;
+  }
+}
+.contant_box .option_answer {
+  position: relative;
+  width: 306px;
+  max-width: 100%;
+  margin-top: 10px;
+}
+.contant_box .option_answer .sl_no {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  position: absolute;
+  left: 6px;
+  z-index: 9999;
+}
+.contant_box .option_answer .number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #F6E58D;
+  color: #000;
+  margin-right: 7px;
+}
+.contant_box .option_answer .option_title {
+  font-size: 12px;
+  font-family: "Inter";
+}
+.contant_box .option_answer .progress-bar {
+  width: 100%;
+  margin: 0px;
+  height: 40px;
+  border-radius: 25px;
+  overflow: hidden;
+}
+.contant_box .option_answer .progress-bar .test {
+  background-color: rgb(255, 121, 121);
+  height: 40px;
+  border-radius: 20px;
+}
+.contant_box .option_answer .total_vote {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  right: 5px;
+}
+.contant_box .option_answer .total_vote span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #F6E58D;
+}/*# sourceMappingURL=style.css.map */

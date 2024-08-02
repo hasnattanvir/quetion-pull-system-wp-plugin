@@ -1,0 +1,23 @@
+*{
+    box-sizing: border-box;
+}
+
+.top{
+    .question_input{
+        background-color: #D9D9D9;
+        border: 1px solid #818181;
+    }
+}
+
+.btn_box_flex{
+    display: flex;
+
+    input{
+        background-color: #0D6805;
+        color: #000;
+    }
+    button{
+        background-color: #0D6805;
+        color: #000;
+    }
+}
