@@ -81,14 +81,59 @@ class MPP_Frontend {
     
         $poll_id = intval($_POST['poll_id']);
         $option_index = intval($_POST['option_index']);
-    
         $polls = get_option('mpp_polls', array());
     
         if (!isset($polls[$poll_id]) || !isset($polls[$poll_id]['options'][$option_index])) {
             wp_send_json_error(array('message' => 'Poll or option not found.'));
         }
     
-        $polls[$poll_id]['votes'][$option_index]++;
+        $user_id = get_current_user_id();
+        $user_ip = $_SERVER['REMOTE_ADDR'];
+        $has_voted = false;
+    
+        // Check if user is logged in
+        if ($user_id) {
+            $user_votes = get_user_meta($user_id, 'mpp_votes', true);
+            if (!is_array($user_votes)) {
+                $user_votes = array();
+            }
+            if (in_array($poll_id, $user_votes)) {
+                // User has voted, allow changing the vote
+                $previously_selected_option = isset($polls[$poll_id]['selected_option']) ? $polls[$poll_id]['selected_option'] : null;
+                if ($previously_selected_option !== null && $previously_selected_option != $option_index) {
+                    // Decrease the count for the previously selected option
+                    $polls[$poll_id]['votes'][$previously_selected_option]--;
+                }
+                // Update the user's vote
+                $polls[$poll_id]['votes'][$option_index]++;
+                $polls[$poll_id]['selected_option'] = $option_index;
+            } else {
+                // User has not voted yet
+                $user_votes[] = $poll_id;
+                update_user_meta($user_id, 'mpp_votes', $user_votes);
+                $polls[$poll_id]['votes'][$option_index]++;
+                $polls[$poll_id]['selected_option'] = $option_index;
+            }
+        } else {
+            // Handle non-logged-in users using IP address and cookies
+            if (isset($_COOKIE['mpp_voted_' . $poll_id])) {
+                // Check if user has already voted
+                $previously_selected_option = isset($polls[$poll_id]['selected_option']) ? $polls[$poll_id]['selected_option'] : null;
+                if ($previously_selected_option !== null && $previously_selected_option != $option_index) {
+                    // Decrease the count for the previously selected option
+                    $polls[$poll_id]['votes'][$previously_selected_option]--;
+                }
+                // Update the cookie to allow a new vote
+                setcookie('mpp_voted_' . $poll_id, '1', time() + 3600 * 24 * 30, COOKIEPATH, COOKIE_DOMAIN); // 30 days
+            } else {
+                // First-time vote
+                setcookie('mpp_voted_' . $poll_id, '1', time() + 3600 * 24 * 30, COOKIEPATH, COOKIE_DOMAIN); // 30 days
+                $polls[$poll_id]['votes'][$option_index]++;
+                $polls[$poll_id]['selected_option'] = $option_index;
+            }
+        }
+    
+        // Calculate new percentages
         $total_votes = array_sum($polls[$poll_id]['votes']);
         $polls[$poll_id]['votes_percent'] = array();
         foreach ($polls[$poll_id]['votes'] as $vote) {
@@ -101,9 +146,14 @@ class MPP_Frontend {
         wp_send_json_success(array(
             'new_percent' => $polls[$poll_id]['votes_percent'][$option_index],
             'new_vote_count' => $polls[$poll_id]['votes'][$option_index],
-            'total_votes' => $total_votes // Include total votes in the response
+            'total_votes' => $total_votes,
+            'votes' => $polls[$poll_id]['votes'],
+            'votes_percent' => $polls[$poll_id]['votes_percent']
         ));
     }
+    
+    
+    
 }
 
 new MPP_Frontend();

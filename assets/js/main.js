@@ -1,10 +1,20 @@
-
-// version two
 jQuery(document).ready(function($) {
+    let selectedOptions = {};
+
     $('.option_answer').on('click', function() {
         var poll_id = $(this).data('poll-id');
         var option_index = $(this).data('option-index');
-        
+
+        if (selectedOptions[poll_id] !== undefined) {
+            // De-select previously selected option
+            $('.option_answer[data-poll-id="' + poll_id + '"][data-option-index="' + selectedOptions[poll_id] + '"]')
+                .removeClass('selected');
+        }
+
+        // Mark the new option as selected
+        $(this).addClass('selected');
+        selectedOptions[poll_id] = option_index;
+
         $.ajax({
             url: mpp_vars.ajaxurl,
             type: 'POST',
@@ -15,70 +25,23 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    var new_percent = Math.round(response.data.new_percent * 100) / 100; // Round to 2 decimal places
-                    var new_vote_count = response.data.new_vote_count;
-                    var totalVotes = response.data.total_votes;
+                    $('.option_answer[data-poll-id="' + poll_id + '"]').each(function() {
+                        var $optionAnswer = $(this);
+                        var $progressBar = $optionAnswer.find('.progress');
+                        var $totalVote = $optionAnswer.find('.total_vote span');
 
-                    var $optionAnswer = $('.option_answer[data-poll-id="' + poll_id + '"][data-option-index="' + option_index + '"]');
-                    var $progressBar = $optionAnswer.find('.progress');
-                    var $totalVote = $optionAnswer.find('.total_vote span');
+                        var index = $optionAnswer.data('option-index');
+                        var percent = response.data.total_votes > 0 ? (response.data.votes_percent[index] / response.data.total_votes) * 100 : 0;
+                        percent = Math.round(percent * 100) / 100; // Round to 2 decimal places
 
-                    var percent = totalVotes > 0 ? (new_vote_count / totalVotes) * 100 : 0;
-                    percent = Math.round(percent * 100) / 100; // Round to 2 decimal places
+                        $progressBar.attr('data-percent', percent);
+                        $progressBar.css('width', percent + '%');
+                        $progressBar.find('span').css('width', percent + '%').text(Math.round(percent) + '%');
 
-                    $progressBar.attr('data-percent', percent);
-                    $progressBar.css('width', percent + '%');
-                    $progressBar.find('span').css('width', percent + '%').text(Math.round(percent) + '%');
-
-                    $totalVote.text(new_vote_count);
+                        $totalVote.text(response.data.votes[index]);
+                    });
                 }
             }
         });
     });
 });
-
-
-
-
-
-// version one
-// with vote button
-
-// jQuery(document).ready(function($) {
-//     $('.vote-button').on('click', function() {
-//         var button = $(this);
-//         var pollId = button.data('poll-id');
-//         var optionIndex = button.data('option-index');
-        
-//         // Disable all buttons to prevent multiple votes
-//         $('.vote-button[data-poll-id="' + pollId + '"]').prop('disabled', true);
-
-//         $.ajax({
-//             url: mpp_vars.ajaxurl,
-//             type: 'POST',
-//             data: {
-//                 action: 'mpp_vote',
-//                 poll_id: pollId,
-//                 option_index: optionIndex
-//             },
-//             success: function(response) {
-//                 if (response.success) {
-//                     var newPercent = response.data.new_percent;
-//                     var newVoteCount = response.data.new_vote_count;
-                    
-//                     // Update the total vote count
-//                     button.siblings('.total_vote').find('span').text(newVoteCount);
-                    
-//                     // Update the progress bar
-//                     button.siblings('.progress-bar').find('.progress').css('width', newPercent + '%').attr('data-percent', newPercent).find('span').text(newPercent.toFixed(2) + '%');
-                    
-//                     // Enable all buttons again
-//                     $('.vote-button[data-poll-id="' + pollId + '"]').prop('disabled', false);
-//                 } else {
-//                     alert(response.data.message);
-//                     $('.vote-button[data-poll-id="' + pollId + '"]').prop('disabled', false);
-//                 }
-//             }
-//         });
-//     });
-// });
