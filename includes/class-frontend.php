@@ -18,9 +18,10 @@ class MPP_Frontend {
     
         $poll_id = intval($atts['id']);
         $polls = get_option('mpp_polls', array());
-    
+        // Short Code when Remove 
         if (!isset($polls[$poll_id]) || !$polls[$poll_id]['status']) { // Check if the poll is active
-            return 'Poll not found or inactive.';
+            // return 'Poll not found or inactive.';
+            return '';
         }
     
         $poll = $polls[$poll_id];
@@ -151,15 +152,7 @@ class MPP_Frontend {
             'votes_percent' => $polls[$poll_id]['votes_percent']
         ));
     }
-
-    
-    
-    
-    
-    
-    
 }
 
 new MPP_Frontend();
-
 ?>

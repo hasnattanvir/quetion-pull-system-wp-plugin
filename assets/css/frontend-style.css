@@ -54,6 +54,7 @@
   position: absolute;
   left: 6px;
   z-index: 9999;
+  height: 100%;
 }
 .contant_box .option_answer .number {
   display: flex;

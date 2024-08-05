@@ -47,45 +47,77 @@ class MPP_Admin {
     
             ?>
             <div class="wrap">
-                <h1>Poll question List</h1>
-                <h2>Existing Polls</h2>
-                <table class="wp-list-table widefat fixed striped">
-                    <thead>
-                        <tr>
-                            <th>SL NO</th>
-                            <th>Title</th>
-                            <th>Options</th>
-                            <th>Short Code</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($polls)): ?>
-                            <?php foreach ($polls as $index => $poll) : ?>
+                <div class="pool_ques_list">
+                    <div class="create_btn">
+                        <a href="admin.php?page=mpp_create_poll">Create Poll +</a>
+                    </div>
+                    <table class="wp-list-table widefat fixed striped">
+                        <thead>
                             <tr>
-                                <td><?php echo esc_html($index + 1); ?></td>
-                                <td><?php echo esc_html($poll['question']); ?></td>
-                                <td><?php echo esc_html(implode(', ', array_map(function($option, $key) {
-                                    return chr(65 + $key) . '. ' . $option;
-                                }, $poll['options'], array_keys($poll['options'])))); ?></td>
-                                <td><code>[mpp_poll id="<?php echo esc_attr($index); ?>"]</code></td> <!-- Display shortcode -->
-                                <td><?php echo $poll['status'] ? 'Active' : 'Inactive'; ?></td>
-                                <td>
-                                    <a href="?page=mpp_polls&action=view&poll_id=<?php echo esc_attr($index); ?>">View</a> | 
-                                    <a href="?page=mpp_polls&action=edit&poll_id=<?php echo esc_attr($index); ?>">Edit</a> | 
-                                    <a href="?page=mpp_polls&action=delete&poll_id=<?php echo esc_attr($index); ?>" onclick="return confirm('Are you sure you want to delete this poll?');">Delete</a> | 
-                                    <a href="?page=mpp_polls&action=toggle_status&poll_id=<?php echo esc_attr($index); ?>"><?php echo $poll['status'] ? 'Deactivate' : 'Activate'; ?></a>
-                                </td>
+                                <th>SL NO</th>
+                                <th>Title</th>
+                                <th>Options</th>
+                                <th>Action</th>
                             </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6">No polls found.</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($polls)): ?>
+                                <?php foreach ($polls as $index => $poll) : ?>
+                                <tr>
+                                    <td><span class="sl_no_cur"><?php echo esc_html($index + 1); ?></span></td>
+                                    <td><?php echo esc_html($poll['question']); ?></td>
+                                    <td class="option_title">
+                                        <span class="option_text">
+                                        <?php 
+                                        echo esc_html(implode(', ', array_map(function($option, $key) {
+                                            return chr(65 + $key) . '. ' . $option;
+                                        }, $poll['options'], array_keys($poll['options'])))); 
+                                        ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action_btn">
+                                            <div class="dropdown">
+                                                <button onclick="toggleDropdown(<?php echo esc_attr($index); ?>)" class="dropbtn">Action</button>
+                                                <div id="PollListDropdown_<?php echo esc_attr($index); ?>" class="dropdown-content">
+                                                    <a href="?page=mpp_polls&action=toggle_status&poll_id=<?php echo esc_attr($index); ?>"><?php echo $poll['status'] ? 'Deactivate' : 'Activate'; ?></a>
+                                                    <a href="?page=mpp_polls&action=view&poll_id=<?php echo esc_attr($index); ?>">View</a> 
+                                                    <a href="?page=mpp_polls&action=edit&poll_id=<?php echo esc_attr($index); ?>">Edit</a>
+                                                    <a href="?page=mpp_polls&action=delete&poll_id=<?php echo esc_attr($index); ?>" onclick="return confirm('Are you sure you want to delete this poll?');">Delete</a> 
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="6">No polls found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+
+                        <script>
+                            function toggleDropdown(index) {
+                                var dropdown = document.getElementById("PollListDropdown_" + index);
+                                dropdown.classList.toggle("show");
+                            }
+                            
+                            // Close the dropdown if the user clicks outside of it
+                            window.onclick = function(event) {
+                                if (!event.target.matches('.dropbtn')) {
+                                    var dropdowns = document.getElementsByClassName("dropdown-content");
+                                    for (var i = 0; i < dropdowns.length; i++) {
+                                        var openDropdown = dropdowns[i];
+                                        if (openDropdown.classList.contains('show')) {
+                                            openDropdown.classList.remove('show');
+                                        }
+                                    }
+                                }
+                            }
+                        </script>
+                    </table>
+                </div>
             </div>
             <?php
         }
@@ -126,29 +158,85 @@ class MPP_Admin {
             $total_votes = array_sum($poll['votes']); // Total votes in the poll
             ?>
             <div class="wrap">
-                <h1>View Poll</h1>
-                <p><strong>Question:</strong> <?php echo esc_html($poll['question']); ?></p>
-                <p><strong>Options and Results:</strong></p>
-                <ul>
-                    <?php foreach ($poll['options'] as $index => $option) : 
-                        $votes = $poll['votes'][$index];
-                        $percent = $total_votes > 0 ? ($votes / $total_votes) * 100 : 0;
-                        ?>
-                        <li>
-                            <?php echo esc_html($option); ?> - <?php echo esc_html($votes); ?> votes (<?php echo round($percent, 2); ?>%)
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-                <p><strong>Total Votes:</strong> <?php echo esc_html($total_votes); ?></p>
-                <p><strong>Total Percentage:</strong> 100%</p> <!-- Since the total percentage is always 100% -->
-                <p><strong>Shortcode:</strong> <code>[mpp_poll id="<?php echo esc_attr($poll_id); ?>"]</code></p>
-                <a href="<?php echo admin_url('admin.php?page=view_all_polls'); ?>">Back to Poll List</a>
+                <div class="view_single">
+                    <div class="q_box">
+                        <h2>View Poll</h2>
+                        <p><strong>Question:</strong> <?php echo esc_html($poll['question']); ?></p>
+                        <p><strong>Options Graph Results:</strong></p>
+                    </div>
+    
+                    <div id="chart">
+                        <ul id="numbers">
+                            <li><span>100%</span></li>
+                            <li><span>90%</span></li>
+                            <li><span>80%</span></li>
+                            <li><span>70%</span></li>
+                            <li><span>60%</span></li>
+                            <li><span>50%</span></li>
+                            <li><span>40%</span></li>
+                            <li><span>30%</span></li>
+                            <li><span>20%</span></li>
+                            <li><span>10%</span></li>
+                            <li><span>0%</span></li>
+                        </ul>
+                        <ul id="bars">
+                            <?php 
+                                $azRange = range('A', 'Z');
+                                $maxCharLimit = 10;
+                                foreach ($poll['options'] as $index => $option) : 
+                                $votes = $poll['votes'][$index];
+                                $percent = $total_votes > 0 ? ($votes / $total_votes) * 100 : 0;
+                                // Truncate the option text to the character limit
+                                $truncatedOption = strlen($option) > $maxCharLimit ? substr($option, 0, $maxCharLimit) . '...' : $option;
+                                ?>
+                                <li>
+                                    <div data-percentage="<?php echo round($percent, 2); ?>" class="bar">
+                                        
+                                        <?php
+                                        if($votes!=0){
+                                            echo '<p class="vote_pqua">QV : '.$votes.'</p>';
+                                        }
+                                        ?>
+                                    </div>
+                                    <span>
+                                        <?php 
+                                        echo $azRange[$index].' : ';
+                                        echo esc_html($truncatedOption); 
+                                        ?>
+                                    </span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                    <div class="text_box">
+                        <p class="total_Vot"><strong>Total Votes:</strong> <?php echo esc_html($total_votes); ?></p>
+                        <p class="total_per"><strong>Total Percentage:</strong> 100%</p> <!-- Since the total percentage is always 100% -->
+                        <p class="short_code"><strong>Shortcode:</strong> <code>[mpp_poll id="<?php echo esc_attr($poll_id); ?>"]</code></p>
+                        <div class="back_btn">
+                            <a href="<?php echo admin_url('admin.php?page=view_all_polls'); ?>">Back to Poll List</a>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <script>
+                jQuery(document).ready(function($) {
+                    $(function(){
+                        $("#bars li .bar").each(function(key, bar){
+                        var percentage = $(this).data('percentage');
+                    
+                        $(this).animate({
+                            'height':percentage+'%'
+                        }, 1000);
+                        })
+                    })
+                });
+            </script>
             <?php
         } else {
             echo '<div class="wrap"><h1>Poll not found</h1></div>';
         }
     }
+    
     
     public function view_all_poll() {
         $polls = get_option('mpp_polls', array());
@@ -279,43 +367,78 @@ class MPP_Admin {
             $shortcode = "[mpp_poll id=\"$poll_id\"]";
             echo '<div class="notice notice-success is-dismissible"><p>Poll created successfully! Use the following shortcode to display the poll: <strong>' . esc_html($shortcode) . '</strong></p></div>';
         }
-    
         ?>
-        <div class="wrap">
-            <h1>Create a Poll</h1>
-            <form method="post" action="">
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Poll Question</th>
-                        <td><input type="text" name="question" placeholder="Enter poll question" required /></td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Status</th>
-                        <td><input type="checkbox" name="status" value="1" /> Active</td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Options</th>
-                        <td id="poll-options">
-                            <div class="option">
-                                <input type="text" name="options[]" placeholder="Poll Option 1" /><button type="button" class="remove-option button">Remove</button><br>
-                            </div>
-                            <div class="option">
-                                <input type="text" name="options[]" placeholder="Poll Option 2" /><button type="button" class="remove-option button">Remove</button><br>
-                            </div>
-                            <div class="option">
-                                <input type="text" name="options[]" placeholder="Poll Option 3" /><button type="button" class="remove-option button">Remove</button><br>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-                <button type="button" id="add-option" class="button">Add Option</button>
-                <br><br>
-                <input type="color" id="bgcolor" name="bgcolor" value="#ffffff">
-                <label for="bgcolor">Choose background color</label>
-                <br><br>
-                <?php submit_button('Save Poll', 'primary', 'new_poll'); ?>
-                <?php submit_button('Save Draft', 'secondary', 'draft_poll'); ?>
-            </form>
+        <div class="create_page">
+            <div class="wrap inner_container">
+                <form method="post" action="">
+                    <table class="form-table">
+                        <tr valign="top">
+                            <td>
+                                <label for="question_name" class="question_name">Add Poll +</label>
+                                <input type="text" id="question_name" name="question" placeholder="Poll Title" required />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="btn_box">
+                                <div class="btn-box-inner">
+                                    <div class="color_pic">
+                                        <button type="button" onclick="cpickFunction()" class="cdropbtn button">Pick Color</button>
+                                    </div>
+                                    <div class="dropdown">
+                                        <div id="PullListDropdown" class="dropdown-content">
+                                            <div class="cpic_box">
+                                                <input type="color" id="bgcolor" name="bgcolor" value="#000000">
+                                            </div> 
+                                        </div>
+                                        <script>
+                                            function cpickFunction() {
+                                                document.getElementById("PullListDropdown").classList.toggle("show");
+                                            }
+                                            
+                                            // Close the dropdown if the user clicks outside of it
+                                            window.onclick = function(event) {
+                                                if (!event.target.matches('.cdropbtn')) {
+                                                    var dropdowns = document.getElementsByClassName("dropdown-content");
+                                                    var i;
+                                                    for (i = 0; i < dropdowns.length; i++) {
+                                                    var openDropdown = dropdowns[i];
+                                                    if (openDropdown.classList.contains('show')) {
+                                                        openDropdown.classList.remove('show');
+                                                    }
+                                                    }
+                                                }
+                                            }
+                                        </script>
+                                    </div>
+                                    <div class="add_option">
+                                        <button type="button"  id="add-option" class="button">Add Option +</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr valign="top">
+                            <td id="poll-options">
+                                <div class="option">
+                                    <input type="text" name="options[]" placeholder="Poll Option 1" />
+                                    <button type="button" class="remove-option button"></button>
+                                </div>
+                                <div class="option">
+                                    <input type="text" name="options[]" placeholder="Poll Option 2" />
+                                    <button type="button" class="remove-option button"></button>
+                                </div>
+                                <div class="option">
+                                    <input type="text" name="options[]" placeholder="Poll Option 3" />
+                                    <button type="button" class="remove-option button"></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="save_darf_box">
+                        <?php submit_button('Save Changes', 'primary', 'new_poll'); ?>
+                        <?php submit_button('Draft', 'secondary', 'draft_poll'); ?>
+                    </div>
+                </form>
+            </div>
         </div>
     
         <script>
@@ -323,7 +446,7 @@ class MPP_Admin {
                 const container = document.getElementById('poll-options');
                 const div = document.createElement('div');
                 div.className = 'option';
-                div.innerHTML = '<input type="text" name="options[]" placeholder="Poll Option ' + (container.getElementsByClassName('option').length + 1) + '" /><button type="button" class="remove-option button">Remove</button><br>';
+                div.innerHTML = '<input type="text" name="options[]" placeholder="Poll Option ' + (container.getElementsByClassName('option').length + 1) + '" /><button type="button" class="remove-option button"></button><br>';
                 container.appendChild(div);
             });
     
