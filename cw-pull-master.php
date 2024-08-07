@@ -1,10 +1,19 @@
 <?php
 /*
-Plugin Name: My Poll Plugin
+Plugin Name: CW Pull Master
 Description: A plugin to create and manage polls.
 Version: 1.0
-Author: A H Tanvir
+Author: Curl Ware
+Requires at least: 5.6
+Requires PHP: 8.0
+Author URI: https://github.com
+License: GPL V2 or later
+License URI: http://www.gnu.org/licenses/lgpl.html
+Company Name: Curl Ware
+Company URI: https://curlware.com/
 */
+
+
 
 // Enqueue frontend scripts and styles
 function mpp_enqueue_scripts() {

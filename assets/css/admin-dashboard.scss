@@ -281,3 +281,82 @@ body{
         }
     }
 }
+
+
+// View All Full
+.form_box{
+    display: flex;
+    justify-content: flex-end;
+    .search_box{
+        width: 350px;
+        height: 45px;
+        border-radius: 5px;
+    }
+    .button{
+        border-radius: 5px;
+        height: 45px;
+        outline: 0px;
+        margin-left: 10px;
+        padding: 10px 20px;
+        color: #000;
+    }
+}
+.pagination{
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    .page-numbers{
+        font-size: 16px;
+        width: 30px;
+        height: 30px;
+        color: #0D6805;
+        border-radius: 50%;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border:1px solid #0D6805;
+        text-decoration: none;
+        margin: 0px 10px;
+    }
+    .current{
+        background-color: #0D6805;
+        color: #fff;
+    }
+    .next{
+        width: 100px;
+        height:auto;
+        padding: 8px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    .prev{
+        font-size: 14px;
+        width: auto;
+        height:auto;
+        padding: 8px;
+        border-radius: 5px;
+    }
+}
+
+.edit_pull{
+    input{
+        &:not([type="checkbox"]):not([type="submit"]){
+            width: 500px;
+            max-width: 100;
+            border-radius: 1px solid #000;
+            border-radius: 5px;
+            height: 45px;
+            margin-bottom: 10px;
+        }
+    }
+    .status_chek{
+        width: 15px;
+    }
+    .submitbtn{
+        background-color: #0D6805;
+        &:hover{
+            background-color: #3cb131;
+        }
+    }
+}

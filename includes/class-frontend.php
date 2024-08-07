@@ -35,7 +35,7 @@ class MPP_Frontend {
         } else {
             $poll['votes_percent'] = array_fill(0, count($poll['votes']), 0);
         }
-
+    
         ob_start();
         ?>
         <div class="contant_box">
@@ -47,7 +47,7 @@ class MPP_Frontend {
                     <div class="option_answer container" data-poll-id="<?php echo esc_attr($poll_id); ?>" data-option-index="<?php echo esc_attr($index); ?>">
                         <div class="sl_no">
                             <div class="number_title">
-                                <span class="number"><?php echo chr(65 + $index); ?></span>
+                                <span class="number"><?php echo esc_html(chr(65 + $index)); ?></span>
                             </div>
                             <div class="option_title">
                                 <p><?php echo esc_html($option); ?></p>
@@ -55,10 +55,10 @@ class MPP_Frontend {
                         </div>
                         <div class="progress-bar">
                             <div class="progress" data-percent="<?php echo esc_attr($poll['votes_percent'][$index]); ?>%" style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%; background-color: echo esc_attr($poll['bgcolor']);" >
-                                <span style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%;"><?php echo round($poll['votes_percent'][$index]);?>%</span>
+                                <span style="width: <?php echo esc_attr($poll['votes_percent'][$index]); ?>%;"><?php echo esc_html(round($poll['votes_percent'][$index])); ?>%</span>
                             </div>
                         </div>
-                        <div class="total_vote"><span><?php echo esc_attr($poll['votes'][$index]); ?></span></div>
+                        <div class="total_vote"><span><?php echo esc_html($poll['votes'][$index]); ?></span></div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -66,6 +66,7 @@ class MPP_Frontend {
         <?php
         return ob_get_clean();
     }
+    
 
     public function enqueue_scripts() {
         wp_enqueue_style('mpp-style', plugin_dir_url(__DIR__) . '/assets/css/frontend-style.css');
@@ -90,7 +91,16 @@ class MPP_Frontend {
     
         $user_id = get_current_user_id();
         $user_ip = $_SERVER['REMOTE_ADDR'];
-        $has_voted = false;
+    
+        // Initialize votes array if not set
+        if (!isset($polls[$poll_id]['votes'])) {
+            $polls[$poll_id]['votes'] = array_fill(0, count($polls[$poll_id]['options']), 0);
+        }
+    
+        // Initialize votes_percent array if not set
+        if (!isset($polls[$poll_id]['votes_percent'])) {
+            $polls[$poll_id]['votes_percent'] = array_fill(0, count($polls[$poll_id]['options']), 0);
+        }
     
         // Check if user is logged in
         if ($user_id) {
@@ -103,7 +113,9 @@ class MPP_Frontend {
                 $previously_selected_option = $user_votes[$poll_id];
                 if ($previously_selected_option !== $option_index) {
                     // Decrease the count for the previously selected option
-                    $polls[$poll_id]['votes'][$previously_selected_option]--;
+                    if ($polls[$poll_id]['votes'][$previously_selected_option] > 0) {
+                        $polls[$poll_id]['votes'][$previously_selected_option]--;
+                    }
                     // Increase the count for the new selected option
                     $polls[$poll_id]['votes'][$option_index]++;
                     $user_votes[$poll_id] = $option_index;
@@ -122,7 +134,9 @@ class MPP_Frontend {
                 $previously_selected_option = $_COOKIE['mpp_voted_' . $poll_id];
                 if ($previously_selected_option !== $option_index) {
                     // Decrease the count for the previously selected option
-                    $polls[$poll_id]['votes'][$previously_selected_option]--;
+                    if ($polls[$poll_id]['votes'][$previously_selected_option] > 0) {
+                        $polls[$poll_id]['votes'][$previously_selected_option]--;
+                    }
                     // Increase the count for the new selected option
                     $polls[$poll_id]['votes'][$option_index]++;
                     setcookie('mpp_voted_' . $poll_id, $option_index, time() + 3600 * 24 * 30, COOKIEPATH, COOKIE_DOMAIN); // 30 days
@@ -138,7 +152,11 @@ class MPP_Frontend {
         $total_votes = array_sum($polls[$poll_id]['votes']);
         $polls[$poll_id]['votes_percent'] = array();
         foreach ($polls[$poll_id]['votes'] as $vote) {
-            $vote_percentage = ($vote / $total_votes) * 100;
+            if ($total_votes > 0) {
+                $vote_percentage = ($vote / $total_votes) * 100;
+            } else {
+                $vote_percentage = 0;
+            }
             $polls[$poll_id]['votes_percent'][] = $vote_percentage;
         }
     
@@ -152,6 +170,7 @@ class MPP_Frontend {
             'votes_percent' => $polls[$poll_id]['votes_percent']
         ));
     }
+    
 }
 
 new MPP_Frontend();

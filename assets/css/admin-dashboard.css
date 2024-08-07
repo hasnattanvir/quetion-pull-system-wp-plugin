@@ -248,4 +248,78 @@ body {
   background-repeat: no-repeat;
   background-position: center center;
   margin-left: 10px;
+}
+
+.form_box {
+  display: flex;
+  justify-content: flex-end;
+}
+.form_box .search_box {
+  width: 350px;
+  height: 45px;
+  border-radius: 5px;
+}
+.form_box .button {
+  border-radius: 5px;
+  height: 45px;
+  outline: 0px;
+  margin-left: 10px;
+  padding: 10px 20px;
+  color: #000;
+}
+
+.pagination {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+.pagination .page-numbers {
+  font-size: 16px;
+  width: 30px;
+  height: 30px;
+  color: #0D6805;
+  border-radius: 50%;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #0D6805;
+  text-decoration: none;
+  margin: 0px 10px;
+}
+.pagination .current {
+  background-color: #0D6805;
+  color: #fff;
+}
+.pagination .next {
+  width: 100px;
+  height: auto;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 14px;
+}
+.pagination .prev {
+  font-size: 14px;
+  width: auto;
+  height: auto;
+  padding: 8px;
+  border-radius: 5px;
+}
+
+.edit_pull input:not([type=checkbox]):not([type=submit]) {
+  width: 500px;
+  max-width: 100;
+  border-radius: 1px solid #000;
+  border-radius: 5px;
+  height: 45px;
+  margin-bottom: 10px;
+}
+.edit_pull .status_chek {
+  width: 15px;
+}
+.edit_pull .submitbtn {
+  background-color: #0D6805;
+}
+.edit_pull .submitbtn:hover {
+  background-color: #3cb131;
 }/*# sourceMappingURL=admin-dashboard.css.map */
